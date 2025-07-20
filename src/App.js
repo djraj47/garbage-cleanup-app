@@ -1,34 +1,35 @@
-import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import Navbar from './Navbar';
 import Upload from './Upload';
 import MapPage from './MapPage';
-import ReportDetails from './ReportDetails';
-import 'leaflet/dist/leaflet.css';
+import Preloader from './Preloader';
+import './App.css';
 
 function App() {
-  return (
-    <BrowserRouter>
-      {/* Simple Navbar */}
-      <nav style={{
-        backgroundColor: '#2c3e50',
-        padding: '12px 20px',
-        display: 'flex',
-        gap: '20px'
-      }}>
-        <Link to="/" style={{ color: 'white', textDecoration: 'none', fontWeight: 'bold' }}>
-          📤 Upload
-        </Link>
-        <Link to="/map" style={{ color: 'white', textDecoration: 'none', fontWeight: 'bold' }}>
-          🗺️ View Map
-        </Link>
-      </nav>
+  const [loading, setLoading] = useState(true);
 
-      {/* Page Routes */}
-      <Routes>
-        <Route path="/" element={<Upload />} />
-        <Route path="/map" element={<MapPage />} />
-        <Route path="/report/:id" element={<ReportDetails />} />
-      </Routes>
-    </BrowserRouter>
+  useEffect(() => {
+    // Simulate a loading delay (e.g., for fetching Supabase data)
+    const timer = setTimeout(() => setLoading(false), 1500);
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (loading) {
+    return <Preloader />;
+  }
+
+  return (
+    <div>
+      <Navbar />
+      <div className="main-content">
+        <div className="left-panel">
+          <Upload />
+        </div>
+        <div className="right-panel">
+          <MapPage />
+        </div>
+      </div>
+    </div>
   );
 }
 

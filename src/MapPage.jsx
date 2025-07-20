@@ -3,9 +3,8 @@ import { supabase } from './supabaseClient';
 import { MapContainer, Marker, Popup, TileLayer } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
-import './MapPage.css'; // Optional: custom styles if needed
+import './MapPage.css';
 
-// Fix Leaflet default icon
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
     iconUrl: 'https://unpkg.com/leaflet@1.9.3/dist/images/marker-icon.png',
@@ -23,11 +22,9 @@ export default function MapPage() {
             const { data, error } = await supabase.from('reports').select('*');
             if (!error) setReports(data);
         }
-
         fetchReports();
     }, []);
 
-    // Fetch comments when a report is selected
     useEffect(() => {
         async function fetchComments() {
             if (!selectedReport) return;
@@ -38,19 +35,15 @@ export default function MapPage() {
                 .order('created_at', { ascending: false });
             setComments(data || []);
         }
-
         fetchComments();
     }, [selectedReport]);
 
     const addComment = async () => {
         if (!newComment.trim()) return;
-
         await supabase.from('comments').insert([
             { report_id: selectedReport.id, text: newComment }
         ]);
         setNewComment('');
-
-        // Refresh comments
         const { data } = await supabase
             .from('comments')
             .select('*')
@@ -72,20 +65,21 @@ export default function MapPage() {
                     attribution="© OpenStreetMap contributors"
                 />
 
-                {reports.map((report) => (
-                    <Marker
-                        key={report.id}
-                        position={[report.lat, report.lng]}
-                        eventHandlers={{
-                            click: () => setSelectedReport(report)
-                        }}
-                    >
-                        <Popup>{report.title}</Popup>
-                    </Marker>
-                ))}
+                {reports
+                    .filter(report => report.lat != null && report.lng != null)
+                    .map((report) => (
+                        <Marker
+                            key={report.id}
+                            position={[report.lat, report.lng]}
+                            eventHandlers={{
+                                click: () => setSelectedReport(report)
+                            }}
+                        >
+                            <Popup>{report.title}</Popup>
+                        </Marker>
+                    ))}
             </MapContainer>
 
-            {/* Right-side panel when marker is clicked */}
             {selectedReport && (
                 <div
                     style={{
@@ -124,15 +118,12 @@ export default function MapPage() {
                         }}
                     />
                     <p><strong>Location:</strong> {selectedReport.location}</p>
-
                     <hr />
-
                     <h4>Comments</h4>
                     {comments.length === 0 && <p>No comments yet.</p>}
                     {comments.map((c) => (
                         <p key={c.id} style={{ marginBottom: '6px' }}>🗨 {c.text}</p>
                     ))}
-
                     <input
                         type="text"
                         value={newComment}
